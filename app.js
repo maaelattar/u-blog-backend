@@ -14,7 +14,7 @@ const path = require('path');
 const app = express();
 
 let isProduction = process.env.NODE_ENV === 'production';
-
+let cookieMaxAge = 60 * 24 * 60 * 60 * 1000;
 const DB_URI = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0-8vfn5.mongodb.net/main-db?retryWrites=true&w=majority`;
 mongoose
   .connect(DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -34,7 +34,7 @@ app.use(express.static(path.join(__dirname, '/public')));
 app.use(
   session({
     secret: 'u-blog-secret',
-    cookie: { maxAge: 3600000 },
+    cookie: { maxAge: cookieMaxAge },
     resave: false,
     saveUninitialized: false
   })
