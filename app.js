@@ -11,6 +11,7 @@ const morgan = require('morgan');
 const path = require('path');
 
 require('./models/User');
+require('./models/Article');
 require('./routes/passport');
 
 //const methodOverride = require('method-override');
