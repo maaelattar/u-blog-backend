@@ -9,6 +9,10 @@ const errorhandler = require('errorhandler');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 const path = require('path');
+
+require('./models/User');
+require('./routes/passport');
+
 //const methodOverride = require('method-override');
 //const methods = require('methods');
 const app = express();
