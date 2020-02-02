@@ -12,6 +12,7 @@ const path = require('path');
 
 require('./models/User');
 require('./models/Article');
+require('./models/Comment');
 require('./routes/passport');
 
 //const methodOverride = require('method-override');

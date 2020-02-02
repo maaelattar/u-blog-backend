@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Article = mongoose.model('Article');
 const User = mongoose.model('User');
+const Comment = mongoose.model('Comment');
 
 const preloadArticle = (req, res, next, slug) => {
   Article.findOne({ slug: slug })
@@ -15,6 +16,17 @@ const preloadArticle = (req, res, next, slug) => {
     .catch(next);
 };
 
+const preloadComment = (req, res, next, id) => {
+  Comment.findById(id)
+    .then(comment => {
+      if (!comment) {
+        return res.status(404);
+      }
+      req.comment = comment;
+      return next();
+    })
+    .catch(next);
+};
 const createArticle = (req, res, next) => {
   User.findById(req.payload.id)
     .then(user => {
@@ -112,10 +124,78 @@ const unFavoriteAnArticle = (req, res, next) => {
       .catch(next);
   });
 };
+
+const getComment = (req, res, next) => {
+  Promise.resolve(req.payload ? User.findById(req.payload.id) : null)
+    .then(user => {
+      return req.article
+        .populate({
+          path: 'comments',
+          populate: {
+            path: 'author'
+          },
+          options: {
+            sort: {
+              createdAt: 'desc'
+            }
+          }
+        })
+        .execPopulate()
+        .then(article => {
+          return res.json({
+            comments: req.article.comments.map(comment => {
+              return comment.toJSONFor(user);
+            })
+          });
+        });
+    })
+    .catch(next);
+};
+
+const createComment = (req, res, next) => {
+  User.findById(req.payload.id)
+    .then(user => {
+      if (!user) {
+        return res.status(401);
+      }
+      let comment = new Comment(req.body.comment);
+      comment.article = req.article;
+      comment.author = user;
+      return req.article.save().then(article => {
+        res.json({ comment: comment.toJSONFor(user) });
+      });
+    })
+    .catch(next);
+};
+
+const deleteComment = (req, res, next) => {
+  if (req.comment.author.toString() === req.payload.id.toString()) {
+    req.article.comments.remove(req.comment._id);
+    req.article
+      .save()
+      .then(
+        Comment.find({ _id: req.comment._id })
+          .remove()
+          .exec()
+      )
+      .then(() => {
+        res.status(204);
+      });
+  } else {
+    res.status(403);
+  }
+};
+
 module.exports = {
   preloadArticle,
+  preloadComment,
   createArticle,
   getArticle,
   updateArticle,
-  deleteArticle
+  deleteArticle,
+  favoriteAnArticle,
+  unFavoriteAnArticle,
+  createComment,
+  getComment,
+  deleteComment
 };
