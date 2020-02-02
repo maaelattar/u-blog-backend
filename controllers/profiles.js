@@ -24,7 +24,38 @@ const getProfile = (req, res, next, username) => {
     return res.json({ profile: req.profile.toProfileJsonFor(false) });
   }
 };
+
+const follow = (req, res, next) => {
+  let profileId = req.profile._id;
+  User.findById(req.payload.id)
+    .then(user => {
+      if (!user) {
+        return res.status(401);
+      }
+      return user.follow(profileId).then(() => {
+        return res({ profile: req.profile.toProfileJsonFor(user) });
+      });
+    })
+    .catch(next);
+};
+
+const unFollow = (req, res, next) => {
+  let profileId = req.profile._id;
+  User.findById(req.payload.id)
+    .then(user => {
+      if (!user) {
+        return res.status(401);
+      }
+      return user.unFollow(profileId).then(() => {
+        return res({ profile: req.profile.toProfileJsonFor(user) });
+      });
+    })
+    .catch(next);
+};
+
 module.exports = {
   preloadArticle,
-  getProfile
+  getProfile,
+  follow,
+  unFollow
 };

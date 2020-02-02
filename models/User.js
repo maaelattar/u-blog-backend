@@ -99,4 +99,23 @@ UserSchema.methods.isFavorite = id => {
     return favoriteId.toString() === id.toString();
   });
 };
+
+UserSchema.methods.follow = id => {
+  if (this.favorites.indexOf(id) === -1) {
+    this.following.push(id);
+  }
+  return this.save();
+};
+
+UserSchema.methods.unFollow = id => {
+  this.following.remove(id);
+  return this.save();
+};
+
+UserSchema.methods.isFollowing = id => {
+  return this.following.some(followId => {
+    return followId.toString() === id.toString();
+  });
+};
+
 mongoose.model('User', UserSchema);
