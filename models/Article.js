@@ -26,6 +26,13 @@ ArticleSchema.methods.slugify = () => {
   this.slug = slug(this.title);
 };
 
+ArticleSchema.methods.updateFavoritesCount = () => {
+  let article = this;
+  return User.count({ favorites: { $in: [article._id] } }).then(count => {
+    article.favoritesCount = count;
+    return article.save();
+  });
+};
 ArticleSchema.methods.toJSONFor = user => {
   return {
     slug: this.slug,
@@ -35,6 +42,7 @@ ArticleSchema.methods.toJSONFor = user => {
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
     tagList: this.tagList,
+    favorited: user ? user.isFavorite(this._id) : false,
     favoritesCount: this.favoritesCount,
     author: this.author.toProfileJSONFor(user)
   };

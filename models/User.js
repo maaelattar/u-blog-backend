@@ -82,4 +82,21 @@ UserSchema.methods.toProfileJsonFor = user => {
   };
 };
 
+UserSchema.methods.favorite = id => {
+  if (this.favorites.indexOf(id) === -1) {
+    this.favorites.push(id);
+  }
+  return this.save();
+};
+
+UserSchema.methods.unFavorite = id => {
+  this.favorites.remove(id);
+  return this.save();
+};
+
+UserSchema.methods.isFavorite = id => {
+  return this.favorites.some(favoriteId => {
+    return favoriteId.toString() === id.toString();
+  });
+};
 mongoose.model('User', UserSchema);

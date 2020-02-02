@@ -79,7 +79,39 @@ const deleteArticle = (req, res, next) => {
     }
   });
 };
+const favoriteAnArticle = (req, res, next) => {
+  let articleId = req.article._id;
+  User.findById(req.payload.id).then(user => {
+    if (!user) {
+      return res.status(401);
+    }
+    return user
+      .favorite(articleId)
+      .then(() => {
+        return req.article.updateFavoritesCount().then(article => {
+          return res.json({ article: article.toJSONFor(user) });
+        });
+      })
+      .catch(next);
+  });
+};
 
+const unFavoriteAnArticle = (req, res, next) => {
+  let articleId = req.article._id;
+  User.findById(req.payload.id).then(user => {
+    if (!user) {
+      return res.status(401);
+    }
+    return user
+      .unFavorite(articleId)
+      .then(() => {
+        return req.article.updateFavoritesCount().then(article => {
+          return res.json({ article: article.toJSONFor(user) });
+        });
+      })
+      .catch(next);
+  });
+};
 module.exports = {
   preloadArticle,
   createArticle,
