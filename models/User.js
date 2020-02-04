@@ -33,7 +33,7 @@ const UserSchema = new mongoose.Schema(
 
 UserSchema.plugin(uniqueValidator, { message: 'Is already taken.' });
 
-UserSchema.methods.validPassword = password => {
+UserSchema.methods.validPassword = function(password) {
   let hash = crypto
     .pbkdf2Sync(password, this.salt, 10000, 512, 'sha512')
     .toString('hex');
@@ -41,14 +41,14 @@ UserSchema.methods.validPassword = password => {
   return this.hash === hash;
 };
 
-UserSchema.methods.setPassword = password => {
+UserSchema.methods.setPassword = function(password) {
   this.salt = crypto.randomBytes(16).toString('hex');
   this.hash = crypto
     .pbkdf2(password, this.salt, 10000, 512, 'sha512')
     .toString('hex');
 };
 
-UserSchema.methods.generateJWT = () => {
+UserSchema.methods.generateJWT = function() {
   let today = new Date();
   let exp = new Date(today);
 
@@ -64,7 +64,7 @@ UserSchema.methods.generateJWT = () => {
   );
 };
 
-UserSchema.methods.toAuthJson = () => {
+UserSchema.methods.toAuthJson = function() {
   return {
     username: this.username,
     email: this.email,
@@ -72,7 +72,7 @@ UserSchema.methods.toAuthJson = () => {
   };
 };
 
-UserSchema.methods.toProfileJsonFor = user => {
+UserSchema.methods.toProfileJsonFor = function(user) {
   return {
     username: this.username,
     bio: this.bio,
@@ -82,38 +82,38 @@ UserSchema.methods.toProfileJsonFor = user => {
   };
 };
 
-UserSchema.methods.favorite = id => {
+UserSchema.methods.favorite = function(id) {
   if (this.favorites.indexOf(id) === -1) {
     this.favorites.push(id);
   }
   return this.save();
 };
 
-UserSchema.methods.unFavorite = id => {
+UserSchema.methods.unFavorite = function(id) {
   this.favorites.remove(id);
   return this.save();
 };
 
-UserSchema.methods.isFavorite = id => {
-  return this.favorites.some(favoriteId => {
+UserSchema.methods.isFavorite = function(id) {
+  return this.favorites.some(function(favoriteId) {
     return favoriteId.toString() === id.toString();
   });
 };
 
-UserSchema.methods.follow = id => {
+UserSchema.methods.follow = function(id) {
   if (this.favorites.indexOf(id) === -1) {
     this.following.push(id);
   }
   return this.save();
 };
 
-UserSchema.methods.unFollow = id => {
+UserSchema.methods.unFollow = function(id) {
   this.following.remove(id);
   return this.save();
 };
 
-UserSchema.methods.isFollowing = id => {
-  return this.following.some(followId => {
+UserSchema.methods.isFollowing = function(id) {
+  return this.following.some(function(followId) {
     return followId.toString() === id.toString();
   });
 };
