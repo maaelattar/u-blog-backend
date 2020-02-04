@@ -27,6 +27,98 @@ const preloadComment = (req, res, next, id) => {
     })
     .catch(next);
 };
+
+const getArticles = (req, res, next) => {
+  let query = {};
+  let limit = 20;
+  let offset = 0;
+
+  if (typeof req.query.limit !== 'undefined') {
+    limit = req.query.limit;
+  }
+  if (typeof req.query.offset !== 'undefined') {
+    offset = req.query.offset;
+  }
+  if (typeof req.query.tag !== 'undefined') {
+    query.tagList = { $in: [req.query.tag] };
+  }
+
+  Promise.all([
+    req.query.author ? User.findOne({ username: req.query.author }) : null,
+    req.query.favorited ? User.findOne({ username: req.query.favorited }) : null
+  ])
+    .then(results => {
+      let author = results[0];
+      let favoriter = results[1];
+      if (author) {
+        query.author = author._id;
+      }
+      if (favoriter) {
+        query._id = { $in: favoriter.favorites };
+      } else if (req.query.favorited) {
+        query._id = { $in: [] };
+      }
+      return Promise.all([
+        Article.find(query)
+          .limit(Number(limit))
+          .skip(offset)
+          .sort({ createdAt: 'desc' })
+          .populate('author')
+          .exec(),
+        Article.count(query).exec(),
+        req.payload ? User.findById(req.payload.id) : null
+      ]).then(results => {
+        let articles = results[0];
+        let articlesCount = results[1];
+        let user = results[2];
+        return res.json({
+          articles: articles.map(article => {
+            return article.toJSONFor(user);
+          }),
+          articlesCount: articlesCount
+        });
+      });
+    })
+    .catch(next);
+};
+const getFeed = (req, res, next) => {
+  let limit = 20;
+  let offset = 0;
+
+  if (typeof req.query.limit !== 'undefined') {
+    limit = req.query.limit;
+  }
+
+  if (typeof req.query.offset !== 'undefined') {
+    offset = req.query.offset;
+  }
+  User.updateFavoritesCount(req.payload.id).then(user => {
+    if (!user) {
+      return res.status(401);
+    }
+    Promise.all([
+      Article.find({ author: { $in: user.following } })
+        .limit(Number(limit))
+        .skip(Number(offset))
+        .populate('author')
+        .exec(),
+      Article.count({ author: { $in: user.following } })
+    ]).then(results => {
+      let articles = results[0];
+      let articlesCount = results[1];
+
+      return res
+        .json({
+          articles: articles.map(article => {
+            return article.toJSONFor(user);
+          }),
+          articlesCount: articlesCount
+        })
+        .catch(next);
+    });
+  });
+};
+
 const createArticle = (req, res, next) => {
   User.findById(req.payload.id)
     .then(user => {
@@ -82,6 +174,9 @@ const updateArticle = (req, res, next) => {
 
 const deleteArticle = (req, res, next) => {
   User.findById(req.payload.id).then(() => {
+    if (!user) {
+      return res.status(401);
+    }
     if (req.article.author.toString() === req.payload.id.toString()) {
       return req.article.remove().then(() => {
         return res.status(204);
@@ -125,7 +220,7 @@ const unFavoriteAnArticle = (req, res, next) => {
   });
 };
 
-const getComment = (req, res, next) => {
+const getComments = (req, res, next) => {
   Promise.resolve(req.payload ? User.findById(req.payload.id) : null)
     .then(user => {
       return req.article
@@ -191,6 +286,8 @@ module.exports = {
   preloadComment,
   createArticle,
   getArticle,
+  getArticles,
+  getFeed,
   updateArticle,
   deleteArticle,
   favoriteAnArticle,

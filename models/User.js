@@ -68,7 +68,9 @@ UserSchema.methods.toAuthJson = function() {
   return {
     username: this.username,
     email: this.email,
-    token: this.generateJWT()
+    token: this.generateJWT(),
+    bio: this.bio,
+    image: this.image
   };
 };
 
@@ -78,7 +80,7 @@ UserSchema.methods.toProfileJsonFor = function(user) {
     bio: this.bio,
     image:
       this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
-    following: false
+    following: user ? user.isFollowing(this._id) : false
   };
 };
 
