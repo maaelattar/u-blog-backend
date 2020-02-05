@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const slug = require('slug');
+const User = mongoose.model('User');
 
 const ArticleSchema = new mongoose.Schema(
   {
@@ -9,6 +10,7 @@ const ArticleSchema = new mongoose.Schema(
     description: String,
     body: String,
     favoritesCount: { type: Number, default: 0 },
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
     tagList: [{ type: String }],
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
   },

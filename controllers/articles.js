@@ -92,7 +92,7 @@ const getFeed = (req, res, next) => {
   if (typeof req.query.offset !== 'undefined') {
     offset = req.query.offset;
   }
-  User.updateFavoritesCount(req.payload.id).then(user => {
+  User.findById(req.payload.id).then(user => {
     if (!user) {
       return res.status(401);
     }
@@ -148,28 +148,33 @@ const getArticle = (req, res, next) => {
 };
 
 const updateArticle = (req, res, next) => {
-  if (req.article._id.toString() === req.payload.id.toString()) {
-    if (typeof req.body.article.title !== 'undefined') {
-      req.article.title = req.body.article.title;
-    }
+  User.findById(req.payload.id).then(user => {
+    if (req.article.author._id.toString() === req.payload.id.toString()) {
+      if (typeof req.body.article.title !== 'undefined') {
+        req.article.title = req.body.article.title;
+      }
 
-    if (typeof req.body.article.description !== 'undefined') {
-      req.article.description = req.body.article.description;
-    }
+      if (typeof req.body.article.description !== 'undefined') {
+        req.article.description = req.body.article.description;
+      }
 
-    if (typeof req.body.article.body !== 'undefined') {
-      req.article.body = req.body.article.body;
-    }
+      if (typeof req.body.article.body !== 'undefined') {
+        req.article.body = req.body.article.body;
+      }
+      if (typeof req.body.article.tagList !== 'undefined') {
+        req.article.tagList = req.body.article.tagList;
+      }
 
-    req.article
-      .save()
-      .then(article => {
-        return res.status(200).json({ article: article.toJSONFor(user) });
-      })
-      .catch(next);
-  } else {
-    return res.status(403);
-  }
+      req.article
+        .save()
+        .then(article => {
+          return res.status(200).json({ article: article.toJSONFor(user) });
+        })
+        .catch(next);
+    } else {
+      return res.status(403);
+    }
+  });
 };
 
 const deleteArticle = (req, res, next) => {
@@ -192,6 +197,7 @@ const favoriteAnArticle = (req, res, next) => {
     if (!user) {
       return res.status(401);
     }
+
     return user
       .favorite(articleId)
       .then(() => {
@@ -256,8 +262,12 @@ const createComment = (req, res, next) => {
       let comment = new Comment(req.body.comment);
       comment.article = req.article;
       comment.author = user;
-      return req.article.save().then(article => {
-        res.json({ comment: comment.toJSONFor(user) });
+      return comment.save().then(() => {
+        req.article.comments.push(comment);
+
+        return req.article.save().then(article => {
+          res.json({ comment: comment.toJSONFor(user) });
+        });
       });
     })
     .catch(next);
@@ -293,6 +303,6 @@ module.exports = {
   favoriteAnArticle,
   unFavoriteAnArticle,
   createComment,
-  getComment,
+  getComments,
   deleteComment
 };
