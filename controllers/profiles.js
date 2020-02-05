@@ -12,16 +12,16 @@ const preloadArticle = (req, res, next, username) => {
     .catch(next);
 };
 
-const getProfile = (req, res, next, username) => {
+const getProfile = (req, res, next) => {
   if (req.payload) {
     User.findById(req.payload.id).then(user => {
       if (!user) {
-        return res.json({ profile: req.profile.toProfileJsonFor(false) });
+        return res.json({ profile: req.profile.toProfileJSONFor(false) });
       }
-      return res.json({ profile: req.profile.toProfileJsonFor(user) });
+      return res.json({ profile: req.profile.toProfileJSONFor(user) });
     });
   } else {
-    return res.json({ profile: req.profile.toProfileJsonFor(false) });
+    return res.json({ profile: req.profile.toProfileJSONFor(false) });
   }
 };
 
@@ -33,7 +33,7 @@ const follow = (req, res, next) => {
         return res.status(401);
       }
       return user.follow(profileId).then(() => {
-        return res({ profile: req.profile.toProfileJsonFor(user) });
+        return res.json({ profile: req.profile.toProfileJSONFor(user) });
       });
     })
     .catch(next);
@@ -47,7 +47,7 @@ const unFollow = (req, res, next) => {
         return res.status(401);
       }
       return user.unFollow(profileId).then(() => {
-        return res({ profile: req.profile.toProfileJsonFor(user) });
+        return res.json({ profile: req.profile.toProfileJSONFor(user) });
       });
     })
     .catch(next);
