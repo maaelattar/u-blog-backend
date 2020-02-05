@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema(
       lowercase: true,
       unique: true,
       required: [true, 'Can not be blank'],
-      match: [/\S+@\S+\.S+/, 'Is invalid'],
+      match: [/\S+@\S+\.\S+/, 'Is invalid'],
       index: true
     },
     bio: String,
@@ -44,23 +44,18 @@ UserSchema.methods.validPassword = function(password) {
 UserSchema.methods.setPassword = function(password) {
   this.salt = crypto.randomBytes(16).toString('hex');
   this.hash = crypto
-    .pbkdf2(password, this.salt, 10000, 512, 'sha512')
+    .pbkdf2Sync(password, this.salt, 10000, 512, 'sha512')
     .toString('hex');
 };
 
 UserSchema.methods.generateJWT = function() {
-  let today = new Date();
-  let exp = new Date(today);
-
-  exp.setDate(today.getDate + 60);
-
   return jwt.sign(
     {
       id: this._id,
-      username: this.username,
-      exp: parseInt(exp.geTime / 1000)
+      username: this.username
     },
-    process.env.SECRET
+    process.env.SECRET,
+    { expiresIn: 7 * 24 * 60 * 60 }
   );
 };
 
@@ -74,7 +69,7 @@ UserSchema.methods.toAuthJson = function() {
   };
 };
 
-UserSchema.methods.toProfileJsonFor = function(user) {
+UserSchema.methods.toProfileJSONFor = function(user) {
   return {
     username: this.username,
     bio: this.bio,

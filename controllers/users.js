@@ -17,6 +17,7 @@ let createUser = (req, res, next) => {
 };
 
 let getUser = (req, res, next) => {
+  console.log(req.payload);
   User.findById(req.payload.id)
     .then(user => {
       if (!user) {
@@ -72,6 +73,7 @@ let userLogin = (req, res, next) => {
       user.token = user.generateJWT();
       return res.json({ user: user.toAuthJson() });
     } else {
+      console.log(user);
       return res.status(422).json(info);
     }
   })(req, res, next);
