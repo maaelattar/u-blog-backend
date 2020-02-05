@@ -40,8 +40,11 @@ app.use(
   })
 );
 
-app.use(errorhandler());
-mongoose.set('debug', true);
+if (!isProduction) {
+  app.use(errorhandler());
+  mongoose.set('debug', true);
+}
+
 
 let server = app.listen(port, () => {
   console.log('listening on port ' + port);
