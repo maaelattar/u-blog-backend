@@ -17,35 +17,34 @@ let isProduction = process.env.NODE_ENV === 'production';
 let cookieMaxAge = 7 * 24 * 60 * 60 * 1000;
 const DB_URI = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0-8vfn5.mongodb.net/main-db?retryWrites=true&w=majority`;
 mongoose
-  .connect(DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    console.log('Connected to database ');
-  })
-  .catch(() => {
-    console.log('Connection failed');
-  });
-
-app.use(cors());
+	.connect(DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+	.then(() => {
+		console.log('Connected to database ');
+	})
+	.catch(() => {
+		console.log('Connection failed');
+	});
+let corsOptions = { origin: '*', credentials: true };
+app.use(cors(corsOptions));
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(require('./routes'));
 
 app.use(
-  session({
-    secret: 'u-blog-secret',
-    cookie: { maxAge: cookieMaxAge },
-    resave: false,
-    saveUninitialized: false
-  })
+	session({
+		secret: 'u-blog-secret',
+		cookie: { maxAge: cookieMaxAge },
+		resave: false,
+		saveUninitialized: false
+	})
 );
 
 if (!isProduction) {
-  app.use(errorhandler());
-  mongoose.set('debug', true);
+	app.use(errorhandler());
+	mongoose.set('debug', true);
 }
 
-
 let server = app.listen(port, () => {
-  console.log('listening on port ' + port);
+	console.log('listening on port ' + port);
 });
