@@ -8,7 +8,7 @@ const preloadArticle = (req, res, next, slug) => {
 		.populate('author')
 		.then(article => {
 			if (!article) {
-				return res.status(404);
+				return res.sendStatus(404);
 			}
 			req.article = article;
 			return next();
@@ -20,7 +20,7 @@ const preloadComment = (req, res, next, id) => {
 	Comment.findById(id)
 		.then(comment => {
 			if (!comment) {
-				return res.status(404);
+				return res.sendStatus(404);
 			}
 			req.comment = comment;
 			return next();
@@ -94,7 +94,7 @@ const getFeed = (req, res, next) => {
 	}
 	User.findById(req.payload.id).then(user => {
 		if (!user) {
-			return res.status(401);
+			return res.sendStatus(401);
 		}
 		Promise.all([
 			Article.find({ author: { $in: user.following } })
@@ -103,19 +103,19 @@ const getFeed = (req, res, next) => {
 				.populate('author')
 				.exec(),
 			Article.count({ author: { $in: user.following } })
-		]).then(results => {
-			let articles = results[0];
-			let articlesCount = results[1];
+		])
+			.then(results => {
+				let articles = results[0];
+				let articlesCount = results[1];
 
-			return res
-				.json({
+				return res.json({
 					articles: articles.map(article => {
 						return article.toJSONFor(user);
 					}),
 					articlesCount: articlesCount
-				})
-				.catch(next);
-		});
+				});
+			})
+			.catch(next);
 	});
 };
 
@@ -123,12 +123,11 @@ const createArticle = (req, res, next) => {
 	User.findById(req.payload.id)
 		.then(user => {
 			if (!user) {
-				return res.status(401);
+				return res.sendStatus(401);
 			}
 			let article = new Article(req.body.article);
 			article.author = user;
 			return article.save().then(() => {
-				console.log(article.author);
 				return res.status(201).json({ article: article.toJSONFor(user) });
 			});
 		})
@@ -172,30 +171,32 @@ const updateArticle = (req, res, next) => {
 				})
 				.catch(next);
 		} else {
-			return res.status(403);
+			return res.sendStatus(403);
 		}
 	});
 };
 
 const deleteArticle = (req, res, next) => {
-	User.findById(req.payload.id).then(() => {
-		if (!user) {
-			return res.status(401);
-		}
-		if (req.article.author.toString() === req.payload.id.toString()) {
-			return req.article.remove().then(() => {
-				return res.status(204);
-			});
-		} else {
-			return res.status(403);
-		}
-	});
+	User.findById(req.payload.id)
+		.then(user => {
+			if (!user) {
+				return res.sendStatus(401);
+			}
+			if (req.article.author._id.toString() === req.payload.id.toString()) {
+				return req.article.remove().then(() => {
+					return res.sendStatus(204);
+				});
+			} else {
+				return res.sendStatus(403);
+			}
+		})
+		.catch(next);
 };
 const favoriteAnArticle = (req, res, next) => {
 	let articleId = req.article._id;
 	User.findById(req.payload.id).then(user => {
 		if (!user) {
-			return res.status(401);
+			return res.sendStatus(401);
 		}
 
 		return user
@@ -213,7 +214,7 @@ const unFavoriteAnArticle = (req, res, next) => {
 	let articleId = req.article._id;
 	User.findById(req.payload.id).then(user => {
 		if (!user) {
-			return res.status(401);
+			return res.sendStatus(401);
 		}
 		return user
 			.unFavorite(articleId)
@@ -257,7 +258,7 @@ const createComment = (req, res, next) => {
 	User.findById(req.payload.id)
 		.then(user => {
 			if (!user) {
-				return res.status(401);
+				return res.sendStatus(401);
 			}
 			let comment = new Comment(req.body.comment);
 			comment.article = req.article;
@@ -284,10 +285,10 @@ const deleteComment = (req, res, next) => {
 					.exec()
 			)
 			.then(() => {
-				res.status(204);
+				res.sendStatus(204);
 			});
 	} else {
-		res.status(403);
+		res.sendStatus(403);
 	}
 };
 
