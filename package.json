@@ -1,36 +1,38 @@
 {
-  "name": "u-blog-backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon -r dotenv/config app.js dotenv_config_path=config/dev.env",
-    "debug": "node --inspect-brk -r dotenv/config app.js dotenv_config_path=config/dev.env"
-  },
-  "engines": {
-    "node": "12.13.1",
-    "npm": "6.12.1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "body-parser": "^1.19.0",
-    "cors": "^2.8.5",
-    "errorhandler": "^1.5.1",
-    "express": "^4.17.1",
-    "express-jwt": "^5.3.1",
-    "express-session": "^1.17.0",
-    "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.8.10",
-    "mongoose-unique-validator": "^2.0.3",
-    "morgan": "^1.9.1",
-    "passport": "^0.4.1",
-    "passport-local": "^1.0.0",
-    "slug": "^2.1.1"
-  },
-  "devDependencies": {
-    "dotenv": "^8.2.0"
-  }
+	"name": "u-blog-backend",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "node app.js",
+		"dev": "nodemon -r dotenv/config app.js dotenv_config_path=config/dev.env",
+		"dev:debug": "set DEBUG=express:* & nodemon -r dotenv/config app.js dotenv_config_path=config/dev.env",
+		"debug": "node --inspect-brk -r dotenv/config app.js dotenv_config_path=config/dev.env"
+	},
+	"engines": {
+		"node": "12.13.1",
+		"npm": "6.12.1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"body-parser": "^1.19.0",
+		"cors": "^2.8.5",
+		"errorhandler": "^1.5.1",
+		"express": "^4.17.1",
+		"express-jwt": "^5.3.1",
+		"express-session": "^1.17.0",
+		"jsonwebtoken": "^8.5.1",
+		"mongoose": "^5.8.10",
+		"mongoose-unique-validator": "^2.0.3",
+		"morgan": "^1.9.1",
+		"passport": "^0.4.1",
+		"passport-local": "^1.0.0",
+		"slug": "^2.1.1"
+	},
+	"devDependencies": {
+		"dotenv": "^8.2.0",
+		"debug": "^4.1.1"
+	}
 }
