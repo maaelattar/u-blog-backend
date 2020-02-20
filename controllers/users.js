@@ -45,10 +45,12 @@ let updateUser = (req, res, next) => {
 			if (typeof req.body.user.image !== 'undefined') {
 				user.image = req.body.user.image;
 			}
-			if (typeof req.body.user.password !== 'undefined') {
+			if (
+				typeof req.body.user.password !== 'undefined' &&
+				req.body.user.password.length !== 0
+			) {
 				user.setPassword(req.body.user.password);
 			}
-
 			return user.save().then(() => {
 				return res.status(200).json({ user: user.toAuthJson() });
 			});
@@ -58,10 +60,11 @@ let updateUser = (req, res, next) => {
 
 let userLogin = (req, res, next) => {
 	if (!req.body.user.email) {
-		return res.status(422).json({ message: 'Email can not be blank' });
+		return res.status(422).json({ errors: { email: "can't be blank" } });
 	}
+
 	if (!req.body.user.password) {
-		return res.status(422).json({ message: 'Password can not be blank' });
+		return res.status(422).json({ errors: { password: "can't be blank" } });
 	}
 
 	passport.authenticate('local', { session: false }, (err, user, info) => {
